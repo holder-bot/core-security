@@ -1,0 +1,77 @@
+[package]
+name        = "external-signer"
+version     = "0.1.0"
+edition     = "2021"
+description = "Self-custodial signing daemon for safu — runs on user's machine"
+
+[[bin]]
+name = "holder-signer"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP server (local :9090 convenience proxy) + client
+axum      = { version = "0.7", features = ["macros", "json"] }
+reqwest   = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+
+# gRPC (Phase 3 — RemoteSignerService)
+tonic = { version = "0.12", features = ["transport", "tls", "tls-webpki-roots"] }
+prost = "0.13"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Shared network client (NEAR + Solana/EVM)
+safu-network = { path = "../safu-network" }
+
+# Crypto — key unwrap (existing path)
+safu-signer   = { path = "../rust-signer" }
+ed25519-dalek = { version = "2", features = ["zeroize"] }
+zeroize       = { version = "1", features = ["derive"] }
+
+# Crypto — signer identity (EC P-256 keypair)
+p256    = { version = "0.13", features = ["ecdh", "pkcs8"] }
+aes-gcm = "0.10"
+
+# Crypto — key store (passphrase-based encryption) + HMAC auth
+pbkdf2 = { version = "0.12", features = ["hmac"] }
+hmac   = "0.12"
+sha2   = "0.10"
+
+# Serialization
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml       = "0.8"
+
+# Utils
+anyhow   = "1"
+futures  = "0.3"
+base64   = "0.21"
+bs58     = "0.5"
+hex      = "0.4"
+chrono   = "0.4"
+uuid     = { version = "1", features = ["v4"] }
+dirs     = "5"
+tracing  = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+cryptoki = { version = "0.12", optional = true }
+
+[features]
+default = []
+secure-enclave = ["dep:security-framework", "dep:security-framework-sys", "dep:core-foundation"]
+yubikey = ["dep:cryptoki"]
+
+# macOS Secure Enclave (compiled only with --features secure-enclave)
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = { version = "2", optional = true, features = ["OSX_10_15"] }
+security-framework-sys = { version = "2", optional = true }
+core-foundation = { version = "0.9", optional = true }
+
+[build-dependencies]
+tonic-build = "0.12"
+
+[dev-dependencies]
+proptest = "1"

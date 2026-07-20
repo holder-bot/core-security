@@ -1,0 +1,85 @@
+[package]
+name = "solana-wasm-wallet-v2"
+version = "2.0.0"
+edition = "2021"
+authors = ["Secure Wallet Development Team"]
+description = "Enterprise-grade Solana WASM wallet with enhanced security"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# WASM bindings
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+
+# Core dependencies - only what we actually need
+sha2 = "0.10"
+bs58 = "0.5"
+hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
+
+# Encryption dependencies
+aes-gcm = "0.10"
+pbkdf2 = "0.12"
+base64 = "0.21"
+zeroize = "1.7"
+argon2 = "0.5"
+secrecy = "0.8"
+
+# BIP39 and key derivation
+bip39 = "2.0"
+slip10 = "0.4"
+tiny-hderive = "0.3"
+ed25519-dalek = "2.1"
+rand = { version = "0.8", features = ["getrandom"] }
+rsa = { version = "0.9", default-features = false, features = ["pem"] }
+
+# Stellar/Soroban support
+stellar-strkey = "0.0.8"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+serde_json = "1.0"
+
+# Error handling and logging
+thiserror = "1.0"
+log = "0.4"
+wasm-logger = "0.2"
+
+# Time operations
+chrono = { version = "0.4", features = ["serde", "wasm-bindgen"] }
+
+# WASM console and web APIs
+console_error_panic_hook = { version = "0.1", optional = true }
+wee_alloc = { version = "0.4", optional = true }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+  "Window",
+  "Storage",
+  "Location",
+  "Crypto",
+  "SubtleCrypto",
+  "Document",
+  "Element",
+  "EventTarget",
+  "Performance",
+  "Request",
+  "Response",
+]
+
+# Development dependencies for testing
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[build-dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+
+[features]
+default = ["console_error_panic_hook"]
+console_error_panic_hook = ["dep:console_error_panic_hook"]
+wee_alloc = ["dep:wee_alloc"]

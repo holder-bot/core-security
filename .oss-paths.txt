@@ -1,0 +1,88 @@
+# Open-source publish inventory — single source for sync-oss.sh + diverge checks.
+# Format: <repo-relative-src> <core-security-dest>
+# Special prefix @contract/ reads from holder-bot/contract-near/
+# Lines starting with # are ignored.
+#
+# See docs2/oss-segregation-plan.md — prefer editing frontend/lib/custody/* over fat app hooks.
+
+# --- NEAR contract (from contract-near) ---
+@contract/src/lib.rs	near/src/lib.rs
+@contract/Cargo.toml	near/Cargo.toml
+@contract/deploy.sh	near/deploy.sh
+
+# --- rust-wasm ---
+rust-wasm/Cargo.toml	rust-wasm/Cargo.toml
+rust-wasm/build.rs	rust-wasm/build.rs
+rust-wasm/src/lib.rs	rust-wasm/src/lib.rs
+rust-wasm/src/lib_simple.rs	rust-wasm/src/lib_simple.rs
+@dir:rust-wasm/src/crypto	rust-wasm/src/crypto
+@dir:rust-wasm/src/networks	rust-wasm/src/networks
+@dir:rust-wasm/src/wallet	rust-wasm/src/wallet
+@dir:rust-wasm/src/storage	rust-wasm/src/storage
+@dir:rust-wasm/src/tokens	rust-wasm/src/tokens
+
+# --- rust-signer-external ---
+rust-signer-external/Cargo.toml	rust-signer-external/Cargo.toml
+rust-signer-external/build.rs	rust-signer-external/build.rs
+rust-signer-external/proto/signer.proto	rust-signer-external/proto/signer.proto
+rust-signer-external/src/main.rs	rust-signer-external/src/main.rs
+rust-signer-external/src/server.rs	rust-signer-external/src/server.rs
+rust-signer-external/src/grpc_daemon.rs	rust-signer-external/src/grpc_daemon.rs
+rust-signer-external/src/sign_pipeline.rs	rust-signer-external/src/sign_pipeline.rs
+rust-signer-external/src/key_store.rs	rust-signer-external/src/key_store.rs
+rust-signer-external/src/config.rs	rust-signer-external/src/config.rs
+rust-signer-external/src/identity.rs	rust-signer-external/src/identity.rs
+rust-signer-external/src/solana.rs	rust-signer-external/src/solana.rs
+rust-signer-external/src/near_client.rs	rust-signer-external/src/near_client.rs
+
+# --- rust-signer ---
+rust-signer/Cargo.toml	rust-signer/Cargo.toml
+rust-signer/src/lib.rs	rust-signer/src/lib.rs
+rust-signer/src/error.rs	rust-signer/src/error.rs
+@dir:rust-signer/src/crypto	rust-signer/src/crypto
+
+# --- API key / subkey / MPC ---
+frontend/lib/agent/keyGeneration.ts	frontend-lib/agent/keyGeneration.ts
+frontend/lib/mpc/derivation.ts	frontend-lib/mpc/derivation.ts
+frontend/lib/near/subkeyKeys.ts	frontend-lib/near/subkeyKeys.ts
+frontend/lib/near/subkeyContract.ts	frontend-lib/near/subkeyContract.ts
+frontend/lib/near/subkeyPolicySync.ts	frontend-lib/near/subkeyPolicySync.ts
+frontend/lib/near/walletPolicyManager.ts	frontend-lib/near/walletPolicyManager.ts
+frontend/core/services/apiKeys.ts	frontend-lib/services/apiKeys.ts
+
+# --- Custody (preferred OSS TS surface — not the fat wallet hook) ---
+@dir:frontend/lib/custody	frontend-lib/custody
+frontend/lib/crypto/encryptedSessionManager.ts	frontend-lib/custody/encryptedSessionManager.ts
+frontend/lib/crypto/encryptionManager.ts	frontend-lib/custody/encryptionManager.ts
+frontend/lib/crypto/session.ts	frontend-lib/custody/session.ts
+frontend/lib/session/sessionPasswordStore.ts	frontend-lib/custody/sessionPasswordStore.ts
+frontend/lib/storage/sessionSecret.ts	frontend-lib/custody/sessionSecret.ts
+frontend/lib/wallet/resolveSessionMnemonic.ts	frontend-lib/custody/resolveSessionMnemonic.ts
+frontend/components/wallet/ProtectedSeedPhrase.tsx	frontend-lib/custody/ui/ProtectedSeedPhrase.tsx
+frontend/components/wallet/ImportSeedWordsForm.tsx	frontend-lib/custody/ui/ImportSeedWordsForm.tsx
+frontend/components/wallet/SeedBackupScreen.tsx	frontend-lib/custody/ui/SeedBackupScreen.tsx
+docs2/mnemonic-security-review-design-implementation.md	frontend-lib/custody/MNEMONIC.md
+
+# --- Signing (intentionally NOT synced — product orchestration) ---
+# Fat helpers (uiSubmit, solana/transactions, localSend, clientSigning, clientSolanaSign)
+# stay private. Audit anchors: rust-wasm + custody + NEAR subkey/policy.
+# Optional later: extract thin signUnsignedTx / parseSignaturePayload into custody/.
+
+# --- Policy ---
+rust-api/src/policy/decision.rs	policy/decision.rs
+rust-api/src/policy/mod.rs	policy/mod.rs
+
+# --- Templates: core transfer builders only (not DEX/x402/product registry) ---
+# types + plain transfers are the policy/audit surface. Do not sync registry.ts
+# (it registers swap/x402/hedera). App keeps full registry privately.
+frontend/lib/templates/types.ts	frontend-lib/templates/types.ts
+frontend/lib/templates/chains/solana/native_transfer.ts	frontend-lib/templates/chains/solana/native_transfer.ts
+frontend/lib/templates/chains/solana/token_transfer.ts	frontend-lib/templates/chains/solana/token_transfer.ts
+frontend/lib/templates/chains/evm/native_transfer.ts	frontend-lib/templates/chains/evm/native_transfer.ts
+frontend/lib/templates/chains/evm/erc20_transfer.ts	frontend-lib/templates/chains/evm/erc20_transfer.ts
+frontend/lib/templates/chains/bitcoin/native_transfer.ts	frontend-lib/templates/chains/bitcoin/native_transfer.ts
+# Private (not synced): registry.ts, index.ts, swap_*, x402_*, hedera_*.
+# Follow-up: registry.core.ts (OSS) + private product registration merge.
+
+# --- Independently runnable OSS PBT suite (authored here, published to core-security/tests) ---
+@dir:oss-tests	tests

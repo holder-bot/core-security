@@ -1,0 +1,129 @@
+syntax = "proto3";
+package signer;
+
+// RemoteSignerService — Phase 3 external signing backend.
+//
+// Phases:
+//   3b  stub only (SignMessage returns UNIMPLEMENTED, HealthCheck returns ok)
+//   3c  SignMessage wired to the Signer trait backend
+//   3d  Daemon RPCs: PollJob / CompleteJob / FetchDeliveries
+//
+// Test with grpcurl (no code needed):
+//   grpcurl -plaintext -proto proto/signer.proto \
+//     localhost:8082 signer.RemoteSignerService/HealthCheck
+service RemoteSignerService {
+  // Sign an arbitrary message payload. Returns a 64-byte ed25519 signature.
+  rpc SignMessage (SignMessageRequest) returns (SignMessageResponse);
+
+  // Liveness probe.
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
+
+  // Daemon RPCs (Phase 3d) ─────────────────────────────────────────────────
+
+  // Long-poll: returns when at least one signing job is ready, or after
+  // the server's timeout (typically 30 s). The daemon calls this in a tight
+  // loop, processing each batch before calling again.
+  rpc PollJob (PollJobRequest) returns (PollJobResponse);
+
+  // Report a job as complete (transmitted) or failed.
+  rpc CompleteJob (CompleteJobRequest) returns (CompleteJobResponse);
+
+  // Fetch pending E2EE subkey deliveries encrypted with the signer's EC public key.
+  rpc FetchDeliveries (FetchDeliveriesRequest) returns (FetchDeliveriesResponse);
+}
+
+// ── Existing messages ─────────────────────────────────────────────────────────
+
+message SignMessageRequest {
+  // Raw bytes to sign (Solana serialised message, EVM keccak hash, etc.)
+  bytes  payload    = 1;
+  // Chain hint: "SOL" | "EVM" | "BTC"
+  string chain      = 2;
+  // UUID — used for idempotency and log correlation.
+  string request_id = 3;
+  // Opaque key identifier resolved by the signing backend.
+  string key_ref    = 4;
+}
+
+message SignMessageResponse {
+  // 64-byte ed25519 signature over `payload`.
+  bytes  signature  = 1;
+  // Echoed from request for correlation.
+  string request_id = 2;
+  // Identity string of the signing backend, e.g. "rust-remote-signer-v1".
+  string signer_id  = 3;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  // "ok" when healthy.
+  string status  = 1;
+  // Semver of the running service binary.
+  string version = 2;
+}
+
+// ── Phase 3d — Daemon RPCs ────────────────────────────────────────────────────
+
+message PollJobRequest {
+  // Signer's API key public ID, used to scope the job queue.
+  string key_public_id = 1;
+  // Max number of jobs to return in one batch (0 = server default, typically 5).
+  uint32 max_jobs      = 2;
+  // Long-poll timeout in seconds (0 = server default, typically 30).
+  uint32 timeout_secs  = 3;
+}
+
+message SigningJob {
+  string         transaction_id   = 1;
+  string         api_key_id       = 2;
+  string         network          = 3;
+  // JSON-encoded SigningMaterial (same structure as the REST response).
+  string         signing_material = 4;
+  // ISO-8601 expiry; signer should skip the job if past this time.
+  string         expires_at       = 5;
+  // Comma-separated NEAR RPC URLs to use for this job (optional override).
+  repeated string near_rpc_urls   = 6;
+}
+
+message PollJobResponse {
+  repeated SigningJob jobs = 1;
+}
+
+message CompleteJobRequest {
+  string transaction_id   = 1;
+  // "transmitted" | "failed"
+  string status           = 2;
+  // Chain transaction hash (present when status = "transmitted").
+  string network_tx_hash  = 3;
+  // NEAR transaction hash of the request_sign_v2 call.
+  string near_tx_hash     = 4;
+  // Human-readable error message (present when status = "failed").
+  string error_message    = 5;
+}
+
+message CompleteJobResponse {
+  // "ok" on success.
+  string result = 1;
+}
+
+message FetchDeliveriesRequest {
+  // Signer's API key public ID.
+  string key_public_id = 1;
+}
+
+// A single E2EE subkey delivery, encrypted with the signer's EC P-256 public key.
+message KeyDelivery {
+  // The API key ID this subkey belongs to.
+  string api_key_id        = 1;
+  // Base64url ephemeral ECDH public key (uncompressed SEC1, 65 bytes).
+  string ephemeral_pub_b64 = 2;
+  // Base64url AES-256-GCM ciphertext (includes GCM tag).
+  string ciphertext_b64    = 3;
+  // Base64url 12-byte GCM nonce (IV).
+  string iv_b64            = 4;
+}
+
+message FetchDeliveriesResponse {
+  repeated KeyDelivery deliveries = 1;
+}

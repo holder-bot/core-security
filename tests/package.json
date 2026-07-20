@@ -1,0 +1,16 @@
+{
+  "name": "@holder/core-security-tests",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Independently runnable PBT suite for Holder core-security (custody assertions)",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "fast-check": "^3.23.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
