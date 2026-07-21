@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, Sprout } from 'lucide-react';
@@ -55,8 +54,8 @@ export default function SeedBackupScreen({
       <div className="mx-auto w-full max-w-[380px] px-4 py-4">
         <BrandHeader hideMenu />
 
-        <Card className="wallet-card bg-gray-950 border-gray-700/50 mt-4">
-          <CardHeader className="pb-2">
+        <Card className="border-0 !bg-gray-800/45 backdrop-blur shadow-none !rounded-2xl mt-4">
+          <CardHeader className="pb-6">
             <CardTitle className="text-lg font-semibold text-gray-300 flex items-center gap-2">
               <Sprout className="w-4 h-4 text-blue-500" />
               {step === 'show' ? 'Save your seed phrase' : 'Confirm your seed phrase'}
@@ -65,13 +64,16 @@ export default function SeedBackupScreen({
           <CardContent className="space-y-5">
             {step === 'show' ? (
               <>
-                <Alert className="border-yellow-400/30 bg-yellow-400/10">
-                  <AlertTriangle className="h-4 w-4 text-yellow-400" />
-                  <AlertDescription className="text-yellow-400 text-sm">
+                <div
+                  role="alert"
+                  className="flex gap-3 rounded-xl border border-orange-500/35 bg-orange-500/10 p-4"
+                >
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-orange-400 mt-0.5" aria-hidden />
+                  <p className="text-sm text-orange-400">
                     Write these {words.length} words down and store them offline. This is the only way
                     to recover your wallet.
-                  </AlertDescription>
-                </Alert>
+                  </p>
+                </div>
 
                 <ProtectedSeedPhrase seedPhrase={seedPhrase} />
 
@@ -118,7 +120,7 @@ export default function SeedBackupScreen({
                           const text = e.clipboardData.getData('text') || '';
                           if (isMultiWordClipboardPaste(text)) e.preventDefault();
                         }}
-                        className="wallet-input font-mono bg-gray-900 text-white border-gray-600"
+                        className="wallet-input font-mono bg-gray-900 text-white border-gray-600 !rounded-xl"
                         placeholder="word"
                       />
                     </div>

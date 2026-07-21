@@ -34,7 +34,7 @@ export function ProtectedSeedPhrase({
         {words.map((word, index) => (
           <div
             key={`${index}-${word}`}
-            className="flex items-start gap-2 rounded border border-gray-700 bg-gray-900/80 px-2.5 py-2 font-mono text-sm text-white min-w-0"
+            className="flex items-start gap-2 rounded-xl border border-gray-700 bg-gray-900/80 px-2.5 py-2 font-mono text-sm text-white min-w-0"
           >
             <span className="text-[10px] text-gray-500 w-5 shrink-0 pt-0.5">{index + 1}.</span>
             <span className="break-all whitespace-normal leading-snug">{word}</span>
