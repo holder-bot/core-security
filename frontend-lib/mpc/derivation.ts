@@ -19,10 +19,10 @@ const TESTNET_RPC_FALLBACKS = [
     'https://near-testnet.drpc.org',
     'https://testnet-rpc.intea.rs'
 ];
-const MAINNET_RPC = 'https://rpc.mainnet.fastnear.com';
+const MAINNET_RPC = 'https://near.lava.build';
 const MAINNET_RPC_FALLBACKS = [
+    'https://near.lava.build',
     'https://rpc.mainnet.fastnear.com',
-    'https://rpc.mainnet.near.org'
 ];
 
 const DEFAULT_MAINNET_SUBKEY_CONTRACT_ID = 'contract.saifu-network.near';

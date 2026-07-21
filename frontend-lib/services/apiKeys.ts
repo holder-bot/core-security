@@ -78,7 +78,7 @@ function resolveSubkeyNetwork(): { contractId: string; networkId: 'mainnet' | 't
       || 'contract.saifu-network.near';
     const rpcUrl = process.env.NEXT_PUBLIC_NEAR_MAINNET_RPC_URL
       || process.env.NEAR_MAINNET_RPC_URL
-      || 'https://rpc.mainnet.fastnear.com';
+      || 'https://near.lava.build';
     return { contractId, networkId: 'mainnet', rpcUrl };
   }
 
