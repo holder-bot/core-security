@@ -2,6 +2,7 @@ import crypto, { constants as cryptoConstants } from 'crypto';
 import { connect, keyStores, KeyPair } from 'near-api-js';
 import type { KeyPairString } from 'near-api-js/lib/utils/key_pair';
 import { resolveNearSubkeyRpcUrl } from '@/lib/rpc/nearDefaults';
+import { nearMpcFunctionCallGas } from '@/lib/near/nearMpcFunctionCallGas';
 import { networkIdFromContractId } from './subkeyContract';
 
 function normalizeKey(key: string): string {
@@ -172,7 +173,7 @@ export async function createAndGrantPolicyManagerOnChain(params: {
         }
       ]
     },
-    gas: BigInt('200000000000000'),
+    gas: nearMpcFunctionCallGas(),
     attachedDeposit: BigInt('0')
   });
 
@@ -180,7 +181,7 @@ export async function createAndGrantPolicyManagerOnChain(params: {
     contractId: params.contractId,
     methodName: 'grant_policy_manager',
     args: { public_key: signerPublicKey, can_manage_self_policy: false },
-    gas: BigInt('200000000000000'),
+    gas: nearMpcFunctionCallGas(),
     attachedDeposit: BigInt('0')
   });
 

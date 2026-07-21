@@ -1,6 +1,7 @@
 import { connect, keyStores, KeyPair } from 'near-api-js';
 import type { KeyPairString } from 'near-api-js/lib/utils/key_pair';
 import { resolveNearSubkeyRpcUrl } from '@/lib/rpc/nearDefaults';
+import { nearMpcFunctionCallGas } from '@/lib/near/nearMpcFunctionCallGas';
 import { networkIdFromContractId } from './subkeyContract';
 
 export interface ApiKeyPolicySyncPayload {
@@ -84,7 +85,7 @@ export async function syncApiKeyPolicyOnChain(params: {
       contractId: params.contractId,
       methodName: 'set_signer_policy',
       args: { public_key: publicKey, policy: params.policy },
-      gas: BigInt('200000000000000'),
+      gas: nearMpcFunctionCallGas(),
       attachedDeposit: BigInt('0')
     });
     return {
@@ -97,7 +98,7 @@ export async function syncApiKeyPolicyOnChain(params: {
     contractId: params.contractId,
     methodName: 'remove_signer_policy',
     args: { public_key: publicKey },
-    gas: BigInt('200000000000000'),
+    gas: nearMpcFunctionCallGas(),
     attachedDeposit: BigInt('0')
   });
   return {

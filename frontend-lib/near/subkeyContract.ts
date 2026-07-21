@@ -13,6 +13,7 @@ import {
 import { finishNearRpcAttempt } from '@/lib/rpc/nearRpcAttempt';
 import { runSequentialRpcFallback, runStickyPollLoop } from '@/lib/rpc/RpcHealthCoordinator';
 import { classifyRpcError } from '@/lib/rpc/rpcErrorClass';
+import { nearMpcFunctionCallGas } from '@/lib/near/nearMpcFunctionCallGas';
 import {
   orderPollEndpoints,
 } from '@/lib/mpc/pollDefaults';
@@ -419,7 +420,7 @@ export async function requestSignV2(params: {
           contractId,
           methodName: 'request_sign_v2',
           args: { request_id: params.requestId, request: params.request },
-          gas: BigInt('200000000000000'),
+          gas: nearMpcFunctionCallGas(),
           attachedDeposit: BigInt('0'),
         }),
         submitTimeoutMs,
@@ -514,7 +515,7 @@ export async function requestTemplateSignV2(params: {
           contractId,
           methodName: 'request_template_sign_v2',
           args: { request_id: params.requestId, request: params.request },
-          gas: BigInt('200000000000000'),
+          gas: nearMpcFunctionCallGas(),
           attachedDeposit: BigInt('0'),
         }),
         submitTimeoutMs,

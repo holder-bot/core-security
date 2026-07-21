@@ -6,6 +6,7 @@ import {
   prioritizeSigningRpcCandidates,
 } from '@/lib/rpc/nearDefaults';
 import { resolveSubkeyChainPaths } from '@/lib/near/subkeyChains';
+import { nearMpcFunctionCallGas } from '@/lib/near/nearMpcFunctionCallGas';
 
 export type ApiKeyInfo = {
   id: string;
@@ -155,7 +156,7 @@ async function registerSubkeyOnChain(params: {
         public_key: params.subkeyPublicKey,
         derivation_paths: derivationPaths,
       },
-      gas: BigInt('200000000000000'),
+      gas: nearMpcFunctionCallGas(),
       attachedDeposit: BigInt('0')
     });
     const txHash = (outcome as any)?.transaction?.hash || (outcome as any)?.transaction_outcome?.id || undefined;
@@ -720,7 +721,7 @@ export function createApiKeyService(apiBase = '/api'): ApiKeyService {
           contractId,
           methodName: 'remove_subkey',
           args: { public_key: normalizedSubkey },
-          gas: BigInt('200000000000000'),
+          gas: nearMpcFunctionCallGas(),
           attachedDeposit: BigInt('0')
         });
         const txHash = (outcome as any)?.transaction?.hash || (outcome as any)?.transaction_outcome?.id;
