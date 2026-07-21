@@ -62,6 +62,14 @@ export type ApiKeyService = {
   createKey: (address: string, name?: string, options?: CreateApiKeyOptions, selectedSeed?: SelectedSeed) => Promise<any>;
   deleteKey: (address: string, apiKeyId: string, opts?: { clientNearTxHash?: string }) => Promise<any>;
   revokeSubkeyOnChain: (params: { mnemonic: string; subkeyPublicKey: string }) => Promise<string | undefined>;
+  /** Re-add subkey (+ access key + bootstrap policy) on the wallet's current NEAR contract. */
+  ensureSubkeyOnChain: (params: {
+    mnemonic: string;
+    subkeyPublicKey: string;
+    chainType?: string;
+    path?: string;
+    onStatus?: (msg: string) => void;
+  }) => Promise<void>;
 };
 
 function resolveSubkeyNetwork(): { contractId: string; networkId: 'mainnet' | 'testnet'; rpcUrl: string } {
@@ -697,6 +705,27 @@ export function createApiKeyService(apiBase = '/api'): ApiKeyService {
       });
     },
 
+    ensureSubkeyOnChain: async (params: {
+      mnemonic: string;
+      subkeyPublicKey: string;
+      chainType?: string;
+      path?: string;
+      onStatus?: (msg: string) => void;
+    }): Promise<void> => {
+      await registerSubkeyOnChain({
+        mnemonic: params.mnemonic,
+        subkeyPublicKey: params.subkeyPublicKey,
+        chainType: params.chainType || 'solana',
+        path: params.path || '0',
+        onStatus: params.onStatus,
+        statusLabels: {
+          addSubkey: 'Registering subkey on wallet NEAR contract...',
+          accessKey: 'Adding call access key...',
+          policy: 'Setting bootstrap signing policy...',
+        },
+      });
+    },
+
     revokeSubkeyOnChain: async (params: {
       mnemonic: string;
       subkeyPublicKey: string;
@@ -704,8 +733,8 @@ export function createApiKeyService(apiBase = '/api'): ApiKeyService {
       const { KeyPair, connect, keyStores } = await import('near-api-js');
       const { deriveNearKeyFromMnemonic } = await import('@/lib/near/keys');
       const bs58 = (await import('bs58')).default;
-      const { contractId, networkId, rpcUrl } = resolveSubkeyNetwork();
-      const rpcUrls = getSubkeyRpcFallbacks(rpcUrl, networkId);
+      const { contractId, networkId } = resolveSubkeyNetwork();
+      const rpcUrls = getSubkeyRpcFallbacks(networkId);
       const nearKey = deriveNearKeyFromMnemonic(params.mnemonic, 0);
       const accountId = nearKey.publicKeyHex;
       const keyStore = new keyStores.InMemoryKeyStore();
