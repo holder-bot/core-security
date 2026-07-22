@@ -67,7 +67,7 @@ export default function SeedBackupScreen({
                 >
                   <AlertTriangle className="h-4 w-4 shrink-0 text-orange-400 mt-0.5" aria-hidden />
                   <p className="text-sm text-orange-400">
-                    Write these {words.length} words down and store them offline. This is the only way
+                    Write down these {words.length} words and store offline. This is the only way
                     to recover your wallet.
                   </p>
                 </div>
@@ -75,9 +75,8 @@ export default function SeedBackupScreen({
                 <ProtectedSeedPhrase seedPhrase={seedPhrase} />
 
                 <ul className="text-xs text-gray-500 space-y-1 list-disc list-inside">
-                  <li>Write down all words in order</li>
-                  <li>Never share them with anyone</li>
-                  <li>You will confirm two words before continuing</li>
+                  <li>Never share or let anyone see it</li>
+                  <li>You will need to confirm two words next</li>
                 </ul>
 
                 <Button

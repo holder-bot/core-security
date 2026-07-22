@@ -43,4 +43,5 @@ export {
   clearSeedBackupPending,
   isSeedBackupPending,
   markSeedBackupPending,
+  markSeedBackupPendingAsync,
 } from './seedBackupGate';

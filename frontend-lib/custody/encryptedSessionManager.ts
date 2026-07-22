@@ -11,6 +11,7 @@ import {
   walletKVRemoveItem,
   walletKVRemoveMatching,
   walletKVSetItem,
+  walletKVSetItemAsync,
 } from '@/lib/storage/walletKV';
 
 const ESM_DEBUG = process.env.NEXT_PUBLIC_DEBUG_LOGS === 'true';
@@ -412,8 +413,8 @@ export class EncryptedSessionManager {
         version: '2.0'
       };
 
-      // Store encrypted data
-      walletKVSetItem(STORAGE_KEYS.ENCRYPTED_WALLET_DATA, JSON.stringify(encryptedWalletData));
+      // Store encrypted data — await so extension popup close cannot race chrome.storage.
+      await walletKVSetItemAsync(STORAGE_KEYS.ENCRYPTED_WALLET_DATA, JSON.stringify(encryptedWalletData));
 
       // Clear any legacy unencrypted data for security
       const hadLegacyData = !!walletKVGetItem(STORAGE_KEYS.LEGACY_WALLET_DATA);

@@ -7,7 +7,7 @@
  * must survive so reopen resumes seed confirmation instead of the main wallet.
  */
 
-import { walletKVGetItem, walletKVRemoveItem, walletKVSetItem } from '@/lib/storage/walletKV';
+import { walletKVGetItem, walletKVRemoveItem, walletKVSetItem, walletKVSetItemAsync } from '@/lib/storage/walletKV';
 
 const KEY = '__safu_seed_backup_pending';
 
@@ -45,6 +45,21 @@ export function markSeedBackupPending(): void {
     walletKVSetItem(KEY, '1');
   } catch {
     /* ignore */
+  }
+  clearLegacySessionFlag();
+}
+
+/** Same as markSeedBackupPending but awaits chrome.storage flush (extension). */
+export async function markSeedBackupPendingAsync(): Promise<void> {
+  writeLocal('1');
+  try {
+    await walletKVSetItemAsync(KEY, '1');
+  } catch {
+    try {
+      walletKVSetItem(KEY, '1');
+    } catch {
+      /* ignore */
+    }
   }
   clearLegacySessionFlag();
 }
