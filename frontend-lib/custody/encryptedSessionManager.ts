@@ -713,6 +713,22 @@ export class EncryptedSessionManager {
       /* never break reset */
     }
 
+    // STEP 0c: Clear seed-backup gate (lives in page localStorage + walletKV under
+    // `__safu_seed_backup_pending` — not matched by safu* prefix alone).
+    try {
+      // Avoid circular import at module load; dynamic require is fine here.
+      const { clearSeedBackupPending } = require('@/lib/custody/seedBackupGate');
+      clearSeedBackupPending();
+    } catch {
+      try {
+        if (typeof localStorage !== 'undefined') localStorage.removeItem('__safu_seed_backup_pending');
+        if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem('__safu_seed_backup_pending');
+        walletKVRemoveItem('__safu_seed_backup_pending');
+      } catch {
+        /* ignore */
+      }
+    }
+
     // STEP 1: Immediately clear logs to prevent sensitive data from being recorded
     if (this.systemLogClearCallback) {
       this.systemLogClearCallback();
@@ -736,6 +752,8 @@ export class EncryptedSessionManager {
       STORAGE_KEYS.TRANSACTION_HISTORY,
       STORAGE_KEYS.ACCESS_TOKEN,
       STORAGE_KEYS.REFRESH_TOKEN,
+      '__safu_seed_backup_pending',
+      '__walletUIReady',
     ];
 
     itemsToRemove.forEach(key => {
@@ -745,11 +763,44 @@ export class EncryptedSessionManager {
     // Clear ALL safu/near/mpc prefixed keys (catches activity history caches,
     // api-keys-cache, derived-addresses, policy caches, mpc cache, etc.)
     walletKVRemoveMatching((key) => {
-      if (key.startsWith('safu') || key.startsWith('near-') || key.includes('mpc')) {
+      if (
+        key.startsWith('safu') ||
+        key.startsWith('__safu') ||
+        key.startsWith('near-') ||
+        key.startsWith('solana_') ||
+        key.includes('mpc')
+      ) {
         return true;
       }
       return false;
     });
+
+    // Extension: JWTs / seed-backup flags are often ALSO in page localStorage
+    // (written directly). walletKV alone is chrome.storage — leaving page LS
+    // intact brings unlock screen back after remount with no vault → loop.
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const pageKeys = Object.keys(localStorage);
+        for (const key of pageKeys) {
+          if (
+            key.startsWith('safu') ||
+            key.startsWith('__safu') ||
+            key.startsWith('solana_') ||
+            key.startsWith('near-') ||
+            key.startsWith('address-init-') ||
+            key.startsWith('wallet-') ||
+            key.includes('mpc')
+          ) {
+            localStorage.removeItem(key);
+          }
+        }
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
+    } catch {
+      /* ignore */
+    }
 
     // STEP 3: Reset AccountController SYNCHRONOUSLY before any page reload
     try {

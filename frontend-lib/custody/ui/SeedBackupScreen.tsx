@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, Sprout } from 'lucide-react';
-import { BrandHeader } from '@/components/shared/BrandHeader';
 import { ProtectedSeedPhrase } from '@/components/wallet/ProtectedSeedPhrase';
 import {
   answersMatchChallenges,
@@ -50,11 +49,9 @@ export default function SeedBackupScreen({
   };
 
   return (
-    <div className="min-h-screen wallet-bg-primary wallet-text-primary font-mono">
-      <div className="mx-auto w-full max-w-[380px] px-4 py-4">
-        <BrandHeader hideMenu />
-
-        <Card className="border-0 !bg-gray-800/45 backdrop-blur shadow-none !rounded-2xl mt-4">
+    <div className="min-h-screen wallet-bg-primary wallet-text-primary font-mono flex items-center justify-center p-4">
+      <div className="mx-auto w-full max-w-[380px]">
+        <Card className="border-0 !bg-gray-800 shadow-none !rounded-2xl">
           <CardHeader className="pb-6">
             <CardTitle className="text-lg font-semibold text-gray-300 flex items-center gap-2">
               <Sprout className="w-4 h-4 text-blue-500" />
